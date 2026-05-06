@@ -1,0 +1,7 @@
+# Ignore Big Data files
+*.zip
+*.csv
+
+# Ignore MongoDB data volumes
+*/data/db
+mongo_data/
