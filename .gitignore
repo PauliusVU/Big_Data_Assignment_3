@@ -5,3 +5,18 @@
 # Ignore MongoDB data volumes
 */data/db
 mongo_data/
+
+# Python bytecode (created every time you run setup_db.py)
+__pycache__/
+*.pyc
+
+# Mac system files
+.DS_Store
+
+# Local Python environments (if someone creates a venv)
+venv/
+.venv/
+env/
+
+# More generic data ignore (just in case)
+data/
