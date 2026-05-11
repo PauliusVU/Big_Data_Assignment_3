@@ -16,7 +16,6 @@ We have implemented a MongoDB Sharded Cluster using Docker Compose. The first 3 
 
 ---
 
-## Further instructions for teammates to run and boot-up for further tasks
 
 ### 1. Boot the Infrastructure
 
