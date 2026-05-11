@@ -1,11 +1,8 @@
-# Big_Data_Assignment_3
-Repository for Big Data Assignment no. 3
-
 # Big Data Analysis - Assignment 3
 
-## Project Architecture (Task 1)
+## Task 1: Project Architecture
 
-We have implemented a MongoDB Sharded Cluster using Docker Compose. This architecture is designed for horizontal scaling to handle the 2GB+ AIS dataset.
+We have implemented a MongoDB Sharded Cluster using Docker Compose. The first 3 million rows of the dataset was used for processing, due to invidual device limitations. 
 
 ### Cluster Nodes & Topology
 
@@ -54,7 +51,9 @@ You should see `shard1RS`, `shard2RS`, and `shard3RS` listed under the `shards` 
 
 ---
 
-## Task 2: Parallel Data Insertion - suggestions/things I think will be necessary
+## Task 2: Parallel Data Insertion 
+
+This task reads the AIS CSV file and inserts data into raw_vessels in parallel. 
 
 ### Prerequisites
 
@@ -64,35 +63,80 @@ Install the MongoDB driver on your local machine:
 pip install pymongo
 ```
 
-### One-Time Sharding Setup
+Prepare the smaller dataset:
 
-> Before starting your parallel insertion loop, you must enable sharding on the database and collection. If you skip this, all data will go to Shard 1 only.
+```bash
+mkdir -p data
+wget -O data/aisdk-2026-04-18.zip http://aisdata.ais.dk/aisdk-2026-04-18.zip
+unzip data/aisdk-2026-04-18.zip -d data/
+head -n 3000001 data/aisdk-2026-04-18.csv > data/ais_small.csv
+```
 
-So we should run something like this snippet once at the start of your Task 2 script:
-The use of MMSI as a key and hashing of MMSI is a design suggestion. MMSI would be used to as the basis to split data on into the shards. But since we have Danish ship data, it is likely that the majority of the ships will have MMSI that is in the same numerical rang, so nearly all data may be loaded on a single shard for this reason. So we hash it to randomize the number and make sure that data is split evenly into the different shards.
+Run: 
 
-```python
+```bash
+python parallel_insert.py
+```
+
+## Task 3: Parallel Data Noise Filtering
+Filters noise from raw_vessels and writes clean data to filtered_vessels in parallel. 
+
+Vessels with fewer than 100 valid records are excluded, and MMSI and Navigational status must exist and be non-empty. 
+
+Furthermore, values that are considered out of range for latitude, longitude, SOG, COG, Heading, and ROT are filtered out: 
+
+| Field | Valid Range | Reason |
+|---|---|---|
+| Latitude | -90 to 90 | Physical earth coordinate limit |
+| Longitude | -180 to 180 | Physical earth coordinate limit |
+| SOG | 0 to 102.2 | AIS spec; 102.3 = not available |
+| COG | 0 to 359.9 | AIS spec; 360.0 = not available |
+| Heading | 0 to 359 | AIS spec; 511 = not available |
+| ROT | -127 to 127 | AIS spec; -128 = error code |
+
+### Indexes Created: 
+- idx_mmsi: single field index on MMSI 
+- idx_noise_filter: index covering all filtered fields
+
+These indexes speed up filtering queries. 
+
+To run: 
+
+```bash
+docker run --rm -it \
+  --network big_data_assignment_3_mongo-cluster \
+  -v $(pwd):/app \
+  -w /app \
+  python:3.12-slim \
+  bash -c "pip install pymongo -q && python parallel_filter.py 2>&1 | tee filter_output.log"
+```
+
+
+
+##################################################################################
+Info deleted from previous README: 
+
+One-Time Sharding Setup
+Before starting your parallel insertion loop, you must enable sharding on the database and collection. If you skip this, all data will go to Shard 1 only.
+
+So we should run something like this snippet once at the start of your Task 2 script: The use of MMSI as a key and hashing of MMSI is a design suggestion. MMSI would be used to as the basis to split data on into the shards. But since we have Danish ship data, it is likely that the majority of the ships will have MMSI that is in the same numerical rang, so nearly all data may be loaded on a single shard for this reason. So we hash it to randomize the number and make sure that data is split evenly into the different shards.
+
 from pymongo import MongoClient
 
 client = MongoClient("mongodb://localhost:27017/")
 admin_db = client.admin
 
-# 1. Enable sharding for the database
+1. Enable sharding for the database
 admin_db.command("enableSharding", "ais_database")
 
-# 2. Shard the raw collection using a HASHED key for even distribution
-# Use "MMSI" as the shard key to avoid hotspots
+2. Shard the raw collection using a HASHED key for even distribution
+3. Use "MMSI" as the shard key to avoid hotspots
 admin_db.command("shardCollection", "ais_database.raw_vessels", key={"MMSI": "hashed"})
 
 print("Database ready for parallel insertion.")
-```
+Connecting from Your Insertion Script - also for Task 2
+Always connect to the router (mongos), not to individual shards. Use a separate MongoClient instance per thread or process — do not share a single client across parallel workers.
 
-### Connecting from Your Insertion Script - also for Task 2 
-
-Always connect to the **router** (`mongos`), not to individual shards. Use a **separate `MongoClient` instance per thread or process** — do not share a single client across parallel workers.
-
-```python
 client = MongoClient("mongodb://localhost:27017/")
 db = client["ais_database"]
 collection = db["raw_vessels"]
-```
