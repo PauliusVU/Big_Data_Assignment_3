@@ -15,7 +15,7 @@ from pymongo import MongoClient, InsertOne
 from pymongo.errors import BulkWriteError, OperationFailure
 
 # Configuration
-CSV_FILEPATH = "data/ais_data.csv"
+CSV_FILEPATH = "data/ais_small.csv"
 MONGO_URI = "mongodb://localhost:27017/"
 DATABASE_NAME = "ais_database"
 COLLECTION_NAME = "raw_vessels"

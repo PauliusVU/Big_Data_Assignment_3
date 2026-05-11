@@ -1,0 +1,35 @@
+Parallel Data Noise Filtering (shard-parallel)
+Shards   : 3  (one worker per shard)
+Source   : raw_vessels
+Dest     : filtered_vessels
+Min pts  : 100
+
+Creating indexes on raw_vessels...
+Source indexes ready
+Destination indexes ready
+'filtered_vessels' sharded
+
+Launching 3 workers (one per shard)...
+
+[shard3] Connecting directly to shard...
+[shard3] Running local aggregation...
+[shard3] 458 qualifying vessels found
+[shard3] Done — 1,036,042 documents inserted
+[shard2] Connecting directly to shard...
+[shard2] Running local aggregation...
+[shard2] 421 qualifying vessels found
+[shard2] Done — 1,033,730 documents inserted
+[shard1] Connecting directly to shard...
+[shard1] Running local aggregation...
+[shard1] 459 qualifying vessels found
+[shard1] Done — 1,109,958 documents inserted
+
+Filtering Complete!
+Documents written to 'filtered_vessels': 3,179,730
+Duration  : 408.46 seconds
+Throughput: 7,785 documents/second
+
+Verification...
+  Raw documents      : 4,495,533
+  Filtered documents : 3,179,730
+  Noise removed      : 1,315,803 (29.3%)
