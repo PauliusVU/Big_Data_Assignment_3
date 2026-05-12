@@ -109,8 +109,44 @@ docker run --rm -it \
   python:3.12-slim \
   bash -c "pip install pymongo -q && python parallel_filter.py 2>&1 | tee filter_output.log"
 ```
+## Task 4: Delta t Calculation and Histogram Generation
 
+This task calculates the time difference (Δt) between consecutive AIS observations for each vessel in the `filtered_vessels` collection and visualizes the results using a histogram.
 
+The goal is to analyze vessel reporting frequency and identify communication patterns in the dataset.
+
+### Method
+
+For each vessel (MMSI), timestamps are sorted chronologically and the difference between consecutive observations is computed:
+
+\[
+\Delta t = (t_i - t_{i-1}) \times 1000 \text{ ms}
+\]
+
+Only positive values are kept to remove duplicate or invalid timestamps.
+
+### Output
+
+The script produces:
+- Statistical summary (mean, median, min, max, P95)
+- Histogram of Δt values showing distribution of reporting intervals
+
+### Insights
+
+- Median Δt (~10s) reflects typical AIS reporting frequency  
+- Short intervals indicate active tracking  
+- Long intervals indicate missing data or vessel inactivity  
+- Distribution is right-skewed with occasional large gaps  
+
+### Input Data
+- Database: `ais_database`  
+- Collection: `filtered_vessels`  
+- Fields: `MMSI`, `Timestamp`
+
+### Dependencies
+```bash
+pip install pymongo numpy matplotlib
+```
 
 ##################################################################################
 Info deleted from previous README: 
