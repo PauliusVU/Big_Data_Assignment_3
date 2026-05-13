@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Parallel CSV to MongoDB insertion script for AIS data.
-Includes one-time sharding setup as per README.md.
 Each worker process gets its own MongoClient instance.
 """
 
@@ -25,7 +24,6 @@ NUM_WORKERS = mp.cpu_count()
 
 def setup_sharding():
     """
-    One-time sharding setup as per README.md suggestions.
     Enables sharding on the database and shards the collection using
     hashed MMSI for even distribution across shards.
     """
@@ -39,7 +37,7 @@ def setup_sharding():
         print(f"  ✓ Sharding enabled for '{DATABASE_NAME}'")
     except OperationFailure as e:
         if e.code == 23:  # Already enabled
-            print(f"  ✓ Sharding already enabled for '{DATABASE_NAME}'")
+            print(f" Sharding already enabled for '{DATABASE_NAME}'")
         else:
             raise
 
