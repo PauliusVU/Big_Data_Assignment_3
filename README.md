@@ -147,7 +147,7 @@ The script produces:
 - Collection: `filtered_vessels`  
 - Fields: `MMSI`, `Timestamp`
 
-### Dependencies
+### Dependencies and run
 ```bash
 pip install pymongo numpy matplotlib
 python delta_histogram.py
