@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e  # This tells the script: "If any command fails, stop everything immediately!"
+set -e  
 
 echo "Waiting 30 seconds for containers to start..."
 sleep 30
