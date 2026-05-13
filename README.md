@@ -109,6 +109,10 @@ docker run --rm -it \
   python:3.12-slim \
   bash -c "pip install pymongo -q && python parallel_filter.py 2>&1 | tee filter_output.log"
 ```
+
+Terminal output is saved to filter_output.log.  
+
+
 ## Task 4: Delta t Calculation and Histogram Generation
 
 This task calculates the time difference (Δt) between consecutive AIS observations for each vessel in the `filtered_vessels` collection and visualizes the results using a histogram.
