@@ -148,8 +148,45 @@ The script produces:
 pip install pymongo numpy matplotlib
 ```
 
+
+## Task 5:
+
+Checking status: 
+```bash
+docker exec -it mongos mongosh --port 27017 --eval "sh.status()"
+```
+
+Checking document count: 
+```bash
+docker exec -it mongos mongosh --port 27017 --eval 'db.getSiblingDB("ais_database").filtered_vessels.estimatedDocumentCount()'
+```
+
+Kill primary node: 
+```bash
+docker stop shard1-a
+```
+
+Check that the data is still accessible:
+```bash
+docker exec -it mongos mongosh --port 27017 --eval 'db.getSiblingDB("ais_database").filtered_vessels.estimatedDocumentCount()'
+```
+
+Showing that a new primary shard was automatically selected: 
+```bash
+docker exec -it shard1-b mongosh --port 27020 --eval "rs.status()"
+```
+
+Restart the node:
+```bash
+docker start shard1-a
+```
+
+Checking that it rejoined:
+```bash
+docker exec -it shard1-a mongosh --port 27018 --eval "rs.status()"
+```
 ##################################################################################
-Info deleted from previous README: 
+Info from previous README: 
 
 One-Time Sharding Setup
 Before starting your parallel insertion loop, you must enable sharding on the database and collection. If you skip this, all data will go to Shard 1 only.
