@@ -5,28 +5,20 @@ import matplotlib.pyplot as plt
 from pymongo import MongoClient
 from datetime import datetime
 
-# -----------------------------
-# CONFIG
-# -----------------------------
 MONGO_URI = "mongodb://localhost:27017/"
 DB_NAME = "ais_database"
 COLLECTION = "filtered_vessels"
 
 MMSI_FIELD = "MMSI"
-TIME_FIELD = "Timestamp"   # adjust if your field name differs
+TIME_FIELD = "Timestamp"  
 
-# -----------------------------
-# CONNECT
-# -----------------------------
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 col = db[COLLECTION]
 
 print("Loading data...")
 
-# -----------------------------
-# LOAD ONLY REQUIRED FIELDS
-# -----------------------------
+
 cursor = col.find(
     {TIME_FIELD: {"$exists": True}},
     {MMSI_FIELD: 1, TIME_FIELD: 1, "_id": 0}
@@ -36,9 +28,7 @@ data = list(cursor)
 
 print(f"Records loaded: {len(data):,}")
 
-# -----------------------------
-# GROUP BY MMSI
-# -----------------------------
+# group by mmsi
 vessels = {}
 
 for doc in data:
@@ -54,9 +44,7 @@ for doc in data:
 
     vessels.setdefault(mmsi, []).append(ts)
 
-# -----------------------------
-# CALCULATE DELTA T (ms)
-# -----------------------------
+# delta t calculation
 delta_t_values = []
 
 for mmsi, timestamps in vessels.items():
@@ -71,9 +59,7 @@ delta_t_values = np.array(delta_t_values)
 
 print(f"Delta t samples: {len(delta_t_values):,}")
 
-# -----------------------------
-# BASIC STATISTICS
-# -----------------------------
+# stats
 if len(delta_t_values) > 0:
     print("\nDelta t statistics (ms):")
     print(f"Mean   : {np.mean(delta_t_values):.2f}")
@@ -82,9 +68,7 @@ if len(delta_t_values) > 0:
     print(f"Max    : {np.max(delta_t_values):.2f}")
     print(f"P95    : {np.percentile(delta_t_values, 95):.2f}")
 
-# -----------------------------
-# HISTOGRAM
-# -----------------------------
+
 plt.figure(figsize=(12, 6))
 
 plt.hist(
