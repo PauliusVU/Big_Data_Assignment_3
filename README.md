@@ -166,7 +166,7 @@ Kill primary node:
 docker stop shard1-a
 ```
 
-Check that the data is still accessible:
+Check that the documents are still accessible:
 ```bash
 docker exec -it mongos mongosh --port 27017 --eval 'db.getSiblingDB("ais_database").filtered_vessels.estimatedDocumentCount()'
 ```
@@ -185,30 +185,3 @@ Checking that it rejoined:
 ```bash
 docker exec -it shard1-a mongosh --port 27018 --eval "rs.status()"
 ```
-##################################################################################
-Info from previous README: 
-
-One-Time Sharding Setup
-Before starting your parallel insertion loop, you must enable sharding on the database and collection. If you skip this, all data will go to Shard 1 only.
-
-So we should run something like this snippet once at the start of your Task 2 script: The use of MMSI as a key and hashing of MMSI is a design suggestion. MMSI would be used to as the basis to split data on into the shards. But since we have Danish ship data, it is likely that the majority of the ships will have MMSI that is in the same numerical rang, so nearly all data may be loaded on a single shard for this reason. So we hash it to randomize the number and make sure that data is split evenly into the different shards.
-
-from pymongo import MongoClient
-
-client = MongoClient("mongodb://localhost:27017/")
-admin_db = client.admin
-
-1. Enable sharding for the database
-admin_db.command("enableSharding", "ais_database")
-
-2. Shard the raw collection using a HASHED key for even distribution
-3. Use "MMSI" as the shard key to avoid hotspots
-admin_db.command("shardCollection", "ais_database.raw_vessels", key={"MMSI": "hashed"})
-
-print("Database ready for parallel insertion.")
-Connecting from Your Insertion Script - also for Task 2
-Always connect to the router (mongos), not to individual shards. Use a separate MongoClient instance per thread or process — do not share a single client across parallel workers.
-
-client = MongoClient("mongodb://localhost:27017/")
-db = client["ais_database"]
-collection = db["raw_vessels"]
