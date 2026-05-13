@@ -150,6 +150,7 @@ The script produces:
 ### Dependencies
 ```bash
 pip install pymongo numpy matplotlib
+python delta_histogram.py
 ```
 
 
