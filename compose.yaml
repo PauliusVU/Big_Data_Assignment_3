@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-  # --- PYTHON ---
-  server:
-    build:
-      context: .
-    ports:
-      - "8000:8000"
-    depends_on:
-      - mongos
-    networks:
-      - mongo-cluster
 
   # --- MONGODB SHARDED CLUSTER ---
   mongos:
